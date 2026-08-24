@@ -5,11 +5,15 @@
 
 *Free, Unlimited, Private-by-Design, and Hardware-Accelerated with WebGPU.*
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-erase--drop.vercel.app-00E5FF?style=for-the-badge&logo=vercel&logoColor=white)](https://erase-drop.vercel.app)
 [![GitHub Stars](https://img.shields.io/github/stars/zzdree/erase-drop?style=for-the-badge&logo=github&color=00E5FF&logoColor=white)](https://github.com/zzdree/erase-drop/stargazers)
-[![GitHub Forks](https://img.shields.io/github/forks/zzdree/erase-drop?style=for-the-badge&logo=github&color=1C54D6&logoColor=white)](https://github.com/zzdree/erase-drop/network/members)
 [![License: MIT](https://img.shields.io/badge/License-MIT-10B981?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
-[![Privacy: 100% Client-Side](https://img.shields.io/badge/Privacy-100%25%20On--Device-10B981?style=for-the-badge&logo=shield&logoColor=white)](https://github.com/zzdree/erase-drop)
-[![Engine: WebGPU + WASM](https://img.shields.io/badge/Engine-WebGPU%20%2F%20WASM-00E5FF?style=for-the-badge&logo=webassembly&logoColor=white)](https://github.com/zzdree/erase-drop)
+[![Privacy: 100% Client-Side](https://img.shields.io/badge/Privacy-100%25%20On--Device-10B981?style=for-the-badge&logo=shield&logoColor=white)](https://erase-drop.vercel.app)
+[![Engine: WebGPU + WASM](https://img.shields.io/badge/Engine-WebGPU%20%2F%20WASM-00E5FF?style=for-the-badge&logo=webassembly&logoColor=white)](https://erase-drop.vercel.app)
+
+<br />
+
+### 🌐 **Live Website:** [https://erase-drop.vercel.app](https://erase-drop.vercel.app)
 
 <br />
 
@@ -150,19 +154,11 @@ Open `http://localhost:5173` in your browser to start removing backgrounds local
 
 ## 🚀 Deployment
 
-### Option 1: Deploy with Vercel Web Dashboard (Recommended)
-1. Push your repository to GitHub: `https://github.com/zzdree/erase-drop`
-2. Go to [Vercel Dashboard](https://vercel.com/new).
-3. Click **"Import"** on `erase-drop`.
-4. Leave build settings as default (Framework Preset: **Vite**, Build Command: `npm run build`, Output Directory: `dist`).
-5. Click **Deploy**.
+- **Production URL:** [https://erase-drop.vercel.app](https://erase-drop.vercel.app)
+- **Deployment Platform:** Vercel
 
-### Option 2: Deploy with Vercel CLI
 ```bash
-# Login to Vercel
-npx vercel login
-
-# Deploy to production
+# Deploy updates via CLI
 npx vercel --prod
 ```
 

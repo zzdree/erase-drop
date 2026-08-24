@@ -1,28 +1,29 @@
 <div align="center">
 
 # ✂️ EraseDrop
-### **Next-Gen 100% In-Browser AI Background Remover**
+### **Penghapus Background Gambar Berbasis AI 100% di Dalam Browser**
 
-*Free, Unlimited, Private-by-Design, and Hardware-Accelerated with WebGPU.*
+*Gratis, Tanpa Batas, Menjaga Privasi Penuh, dan Dipercepat oleh WebGPU.*
 
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-erase--drop.vercel.app-00E5FF?style=for-the-badge&logo=vercel&logoColor=white)](https://erase-drop.vercel.app)
 [![GitHub Stars](https://img.shields.io/github/stars/zzdree/erase-drop?style=for-the-badge&logo=github&color=00E5FF&logoColor=white)](https://github.com/zzdree/erase-drop/stargazers)
-[![License: MIT](https://img.shields.io/badge/License-MIT-10B981?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
-[![Privacy: 100% Client-Side](https://img.shields.io/badge/Privacy-100%25%20On--Device-10B981?style=for-the-badge&logo=shield&logoColor=white)](https://erase-drop.vercel.app)
-[![Engine: WebGPU + WASM](https://img.shields.io/badge/Engine-WebGPU%20%2F%20WASM-00E5FF?style=for-the-badge&logo=webassembly&logoColor=white)](https://erase-drop.vercel.app)
+[![License: MIT](https://img.shields.io/badge/Lisensi-MIT-10B981?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
+[![Privacy: 100% Client-Side](https://img.shields.io/badge/Privasi-100%25%20Lokal%20Device-10B981?style=for-the-badge&logo=shield&logoColor=white)](https://erase-drop.vercel.app)
+[![Engine: WebGPU + WASM](https://img.shields.io/badge/Mesin-WebGPU%20%2F%20WASM-00E5FF?style=for-the-badge&logo=webassembly&logoColor=white)](https://erase-drop.vercel.app)
 
 <br />
 
-### 🌐 **Live Website:** [https://erase-drop.vercel.app](https://erase-drop.vercel.app)
+### 🌐 **Akses Website Langsung:** [https://erase-drop.vercel.app](https://erase-drop.vercel.app)
 
 <br />
 
 <p align="center">
-  <a href="#-key-features">Key Features</a> •
-  <a href="#-how-it-works--privacy-guarantee">Privacy & Architecture</a> •
-  <a href="#-formal-pas-foto-presets">Pas Foto Presets</a> •
-  <a href="#-tech-stack">Tech Stack</a> •
-  <a href="#-getting-started">Getting Started</a> •
+  <a href="#-tentang-erasedrop">Tentang</a> •
+  <a href="#-fitur-utama">Fitur Utama</a> •
+  <a href="#-cara-kerja--jaminan-privasi">Cara Kerja & Privasi</a> •
+  <a href="#-preset-warna-pas-foto-resmi-indonesia">Preset Pas Foto</a> •
+  <a href="#-teknologi-yang-digunakan">Teknologi</a> •
+  <a href="#-panduan-instalasi-lokal">Instalasi Lokal</a> •
   <a href="#-deployment">Deployment</a>
 </p>
 
@@ -30,63 +31,63 @@
 
 </div>
 
-## 💡 What is EraseDrop?
+## 💡 Tentang EraseDrop
 
-**EraseDrop** is an ultra-fast, zero-server image background removal web application. Unlike traditional background removers that require costly subscriptions, token credits, or upload your private photos to remote cloud servers, **EraseDrop runs state-of-the-art neural network matting directly inside your browser**.
+**EraseDrop** adalah aplikasi web penghapus latar belakang gambar modern yang bekerja tanpa server (*zero-server upload*). Berbeda dengan aplikasi penghapus background konvensional yang memungut biaya langganan, sistem token/kredit, atau mengunggah foto pribadi Anda ke server cloud, **EraseDrop menjalankan model kecerdasan buatan (*neural network matting*) langsung di dalam browser perangkat Anda**.
 
-Everything stays inside your machine. No accounts, no watermarks, no limits.
+Seluruh file foto tetap berada di perangkat Anda secara aman. Tanpa login akun, tanpa watermark, dan tanpa batasan kuota.
 
 ---
 
-## ✨ Key Features
+## ✨ Fitur Utama
 
 <table>
   <tr>
     <td width="50%">
-      <h3>🔒 100% On-Device Privacy</h3>
-      <p>Zero byte sent across the internet. Images are segmented directly inside your browser memory using WebAssembly & WebGPU.</p>
+      <h3>🔒 100% Privasi di Perangkat</h3>
+      <p>Tidak ada 1 byte pun data foto yang dikirim ke internet. Pemotongan background dieksekusi langsung di memori browser Anda menggunakan WebAssembly & WebGPU.</p>
     </td>
     <td width="50%">
-      <h3>⚡ WebGPU Hardware Acceleration</h3>
-      <p>Blazing-fast inference speeds (1–3 seconds per photo) leveraging your local GPU, with automatic fallback to multithreaded WASM SIMD.</p>
-    </td>
-  </tr>
-  <tr>
-    <td width="50%">
-      <h3>📦 Unlimited Batch Processing</h3>
-      <p>Drop 10, 50, or 100+ photos simultaneously. Progress is tracked per-item with a 1-click <strong>Download All ZIP</strong> exporter.</p>
-    </td>
-    <td width="50%">
-      <h3>🎨 Interactive Backdrop Studio</h3>
-      <p>Fine-tune results with a real-time split slider (Before vs After), solid colors, custom studio gradients, or custom background photos.</p>
+      <h3>⚡ Akselerasi Hardware WebGPU</h3>
+      <p>Proses pemotongan subjek super cepat (1–3 detik per foto) memanfaatkan GPU lokal perangkat, dengan fallback otomatis ke WASM SIMD multi-threading.</p>
     </td>
   </tr>
   <tr>
     <td width="50%">
-      <h3>🇮🇩 Formal Pas Foto Presets</h3>
-      <p>Instant 1-click background colors for Indonesian official documents: <strong>Red (#D61C1C)</strong> for odd birth years and <strong>Blue (#1C54D6)</strong> for even birth years.</p>
+      <h3>📦 Batch Processing Tanpa Batas</h3>
+      <p>Masukkan 10, 50, hingga 100+ foto sekaligus. Progress dipantau secara real-time per gambar dan dapat diunduh sekaligus dalam format <strong>ZIP 1-Klik</strong>.</p>
     </td>
     <td width="50%">
-      <h3>💾 Offline Local History</h3>
-      <p>Processed images are cached locally in your browser's <strong>IndexedDB</strong> for instant re-download without consuming cloud storage.</p>
+      <h3>🎨 Studio & Editor Background Interaktif</h3>
+      <p>Bandingkan detail potongan secara presisi dengan slider <em>Before vs After</em>, ganti latar belakang menjadi warna solid, gradien studio, atau foto custom.</p>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>🇮🇩 Preset Warna Pas Foto Resmi</h3>
+      <p>1-Klik ganti latar belakang pas foto formal dokumen Indonesia: <strong>Merah (#D61C1C)</strong> untuk tahun lahir ganjil & <strong>Biru (#1C54D6)</strong> untuk tahun lahir genap.</p>
+    </td>
+    <td width="50%">
+      <h3>💾 Riwayat Offline Lokal (IndexedDB)</h3>
+      <p>Hasil foto tersimpan di penyimpanan lokal browser Anda (<strong>IndexedDB</strong>) sehingga dapat diunduh kembali kapan saja tanpa memakan ruang server.</p>
     </td>
   </tr>
 </table>
 
 ---
 
-## 🛡️ How It Works & Privacy Guarantee
+## 🛡️ Cara Kerja & Jaminan Privasi
 
 ```mermaid
 graph LR
-    A[User Drops Image] --> B[Browser Memory / Blob]
-    B --> C{WebGPU Available?}
-    C -- Yes --> D[WebGPU Neural Inference]
-    C -- No --> E[WASM SIMD Multi-threading]
-    D --> F[Alpha Matte Output]
+    A[User Memilih / Drop Foto] --> B[Memori Browser / Blob]
+    B --> C{WebGPU Didukung?}
+    C -- Ya --> D[Inferensi AI WebGPU Cepat]
+    C -- Tidak --> E[WASM SIMD Multi-Threading CPU]
+    D --> F[Hasil Alpha Matte Transparan]
     E --> F
-    F --> G[Interactive Studio & ZIP Exporter]
-    F --> H[Local IndexedDB History]
+    F --> G[Studio Background & Export ZIP]
+    F --> H[Penyimpanan Riwayat Lokal IndexedDB]
     
     style A fill:#171A24,stroke:#00E5FF,color:#fff
     style B fill:#171A24,stroke:#334155,color:#fff
@@ -97,88 +98,88 @@ graph LR
     style H fill:#171A24,stroke:#334155,color:#fff
 ```
 
-> **Security Note:** EraseDrop operates strictly with client-side isolation. You can disconnect your internet after loading the page, and the background remover will continue to work seamlessly offline.
+> **Catatan Keamanan:** EraseDrop beroperasi dengan isolasi penuh pada sisi klien (*client-side*). Anda bahkan dapat mematikan koneksi internet setelah website dimuat, dan aplikasi akan tetap berfungsi normal secara offline.
 
 ---
 
-## 📸 Formal Pas Foto Presets
+## 📸 Preset Warna Pas Foto Resmi Indonesia
 
-EraseDrop includes calibrated color presets specifically tailored for job applications, CPNS, visa applications, and government identity cards:
+EraseDrop menyediakan preset warna terkalibrasi khusus untuk kebutuhan dokumen resmi Indonesia, lamaran kerja, CPNS, visa, dan administrasi:
 
-| Preset Name | Color Hex | Official Usage |
+| Nama Preset | Kode Hex | Penggunaan Resmi |
 | :--- | :---: | :--- |
-| **Merah Formal** | `#D61C1C` | Pas Foto KTP / Ijazah / Dokumen Resmi (Tahun Kelahiran Ganjil) |
-| **Biru Formal** | `#1C54D6` | Pas Foto KTP / Ijazah / Dokumen Resmi (Tahun Kelahiran Genap) |
-| **Studio Putih** | `#FFFFFF` | E-Commerce Product Catalog, Visa Internasional |
-| **Studio Abu-Abu** | `#E2E8F0` | LinkedIn Corporate Headshots, Clean Minimalist Portfolio |
-| **Charcoal Dark** | `#1E293B` | Modern Professional Dark Theme Headshots |
+| **Merah Formal** | `#D61C1C` | Pas Foto KTP / Ijazah / Dokumen Resmi (**Tahun Kelahiran Ganjil**) |
+| **Biru Formal** | `#1C54D6` | Pas Foto KTP / Ijazah / Dokumen Resmi (**Tahun Kelahiran Genap**) |
+| **Studio Putih** | `#FFFFFF` | Katalog Produk E-Commerce, Pengajuan Visa Internasional |
+| **Studio Abu-Abu** | `#E2E8F0` | Foto Profil LinkedIn, Portfolio Minimalis & Profesional |
+| **Charcoal Gelap** | `#1E293B` | Foto Profil Modern Dark Theme |
 
 ---
 
-## 🛠️ Tech Stack & Dependencies
+## 🛠️ Teknologi yang Digunakan
 
-- **Core Framework:** [React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
-- **Styling & Design System:** [Tailwind CSS v4](https://tailwindcss.com/)
-- **AI Inference Engine:** [`@imgly/background-removal`](https://github.com/imgly/background-removal-js) via ONNX Runtime Web
-- **Batch Archiving:** [`JSZip`](https://stuk.github.io/jszip/) & [`file-saver`](https://github.com/eligrey/FileSaver.js/)
-- **Icons & Visuals:** [`lucide-react`](https://lucide.dev/) & [`canvas-confetti`](https://www.npmjs.com/package/canvas-confetti)
-- **Local Persistence:** Native Browser IndexedDB
+- **Framework Utama:** [React 18](https://react.dev/) + [TypeScript](https://www.typescriptlang.org/) + [Vite](https://vitejs.dev/)
+- **Desain & Styling:** [Tailwind CSS v4](https://tailwindcss.com/)
+- **Mesin Inferensi AI:** [`@imgly/background-removal`](https://github.com/imgly/background-removal-js) melalui ONNX Runtime Web
+- **Batch ZIP Exporter:** [`JSZip`](https://stuk.github.io/jszip/) & [`file-saver`](https://github.com/eligrey/FileSaver.js/)
+- **Ikon & Visual:** [`lucide-react`](https://lucide.dev/) & [`canvas-confetti`](https://www.npmjs.com/package/canvas-confetti)
+- **Penyimpanan Lokal:** Browser Native IndexedDB
 
 ---
 
-## 💻 Getting Started
+## 💻 Panduan Instalasi Lokal
 
-### Prerequisites
-- [Node.js](https://nodejs.org/) version 18+ or 20+
-- Modern Web Browser (Google Chrome, Microsoft Edge, Safari, Firefox, or Brave)
+### Prasyarat
+- [Node.js](https://nodejs.org/) versi 18+ atau 20+
+- Browser modern (Google Chrome, Microsoft Edge, Safari, Firefox, atau Brave)
 
-### Installation
+### Langkah Menjalankan
 
 ```bash
-# 1. Clone the repository
+# 1. Clone repositori dari GitHub
 git clone https://github.com/zzdree/erase-drop.git
 
-# 2. Enter project directory
+# 2. Masuk ke direktori proyek
 cd erase-drop
 
-# 3. Install dependencies
+# 3. Install seluruh dependensi
 npm install
 
-# 4. Start local development server
+# 4. Jalankan server lokal development
 npm run dev
 ```
 
-Open `http://localhost:5173` in your browser to start removing backgrounds locally.
+Buka `http://localhost:5173` di browser Anda untuk mulai menghapus background gambar secara lokal.
 
 ---
 
 ## 🚀 Deployment
 
 - **Production URL:** [https://erase-drop.vercel.app](https://erase-drop.vercel.app)
-- **Deployment Platform:** Vercel
+- **Platform:** Vercel
 
 ```bash
-# Deploy updates via CLI
+# Deploy pembaruan via Vercel CLI
 npx vercel --prod
 ```
 
 ---
 
-## 📄 Documentation
+## 📄 Dokumentasi Proyek
 
 - [Product Requirements Document (PRD.md)](./PRD.md)
 - [Design System & UI Tokens (DESIGN.md)](./DESIGN.md)
 
 ---
 
-## 👨‍💻 Author & Maintainer
+## 👨‍💻 Pengembang & Pemilik Proyek
 
 **Andreas Restuawanta Christwara**  
 - GitHub: [@zzdree](https://github.com/zzdree)
-- Repository: [zzdree/erase-drop](https://github.com/zzdree/erase-drop)
+- Repositori: [zzdree/erase-drop](https://github.com/zzdree/erase-drop)
 
 ---
 
 <div align="center">
-  <sub>Built with ❤️ for privacy, efficiency, and creators worldwide.</sub>
+  <sub>Dibuat dengan ❤️ untuk privasi, efisiensi, dan kemudahan para kreator & pengguna di seluruh dunia.</sub>
 </div>

@@ -1,88 +1,63 @@
 import JSZip from 'jszip';
 import { saveAs } from 'file-saver';
 import type { ProcessedImageItem } from '../types';
+import { compositeStudioImage } from './canvasEffects';
 
 /**
- * Composite a transparent image over a backdrop (color, gradient, image) onto a canvas and return a Blob
+ * Composite full image with all studio configurations and return a Blob
  */
-export async function renderImageWithBackdrop(
-  imgSource: string | Blob,
-  backdrop: ProcessedImageItem['backdrop'],
-  format: string = 'image/png',
-  quality: number = 0.95
+export async function renderProcessedItemToBlob(
+  item: ProcessedImageItem,
+  format = 'image/png',
+  quality = 0.95
 ): Promise<Blob> {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    const url = typeof imgSource === 'string' ? imgSource : URL.createObjectURL(imgSource);
-    
-    img.crossOrigin = 'anonymous';
-    img.onload = () => {
-      const canvas = document.createElement('canvas');
-      canvas.width = img.naturalWidth || img.width;
-      canvas.height = img.naturalHeight || img.height;
-      const ctx = canvas.getContext('2d');
+  if (!item.processedUrl) throw new Error('No processed URL available');
 
-      if (!ctx) {
-        if (typeof imgSource !== 'string') URL.revokeObjectURL(url);
-        reject(new Error('Canvas context unavailable'));
-        return;
-      }
+  const subImg = new Image();
+  subImg.crossOrigin = 'anonymous';
 
-      // Draw backdrop if not transparent
-      if (backdrop.type === 'color') {
-        ctx.fillStyle = backdrop.value;
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-      } else if (backdrop.type === 'gradient') {
-        const grad = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
-        const stops = backdrop.value.split(',');
-        if (stops.length >= 2) {
-          grad.addColorStop(0, stops[0].trim());
-          grad.addColorStop(1, stops[1].trim());
-          ctx.fillStyle = grad;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        } else {
-          ctx.fillStyle = backdrop.value;
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-        }
-      } else if (backdrop.type === 'image' && backdrop.value) {
-        const bgImg = new Image();
-        bgImg.onload = () => {
-          ctx.drawImage(bgImg, 0, 0, canvas.width, canvas.height);
-          ctx.drawImage(img, 0, 0);
-          canvas.toBlob(
-            (blob) => {
-              if (typeof imgSource !== 'string') URL.revokeObjectURL(url);
-              if (blob) resolve(blob);
-              else reject(new Error('Canvas blob generation failed'));
-            },
-            format,
-            quality
-          );
-        };
-        bgImg.src = backdrop.value;
-        return;
-      }
+  await new Promise<void>((resolve, reject) => {
+    subImg.onload = () => resolve();
+    subImg.onerror = () => reject(new Error('Failed to load image'));
+    subImg.src = item.processedUrl!;
+  });
 
-      // Draw cutout foreground
-      ctx.drawImage(img, 0, 0);
+  let origImg: HTMLImageElement | null = null;
+  if (item.originalUrl) {
+    origImg = new Image();
+    origImg.crossOrigin = 'anonymous';
+    await new Promise<void>((resolve) => {
+      origImg!.onload = () => resolve();
+      origImg!.onerror = () => resolve();
+      origImg!.src = item.originalUrl;
+    });
+  }
 
-      canvas.toBlob(
-        (blob) => {
-          if (typeof imgSource !== 'string') URL.revokeObjectURL(url);
-          if (blob) resolve(blob);
-          else reject(new Error('Canvas blob generation failed'));
-        },
-        format,
-        quality
-      );
-    };
+  const w = subImg.naturalWidth || 800;
+  const h = subImg.naturalHeight || 800;
 
-    img.onerror = () => {
-      if (typeof imgSource !== 'string') URL.revokeObjectURL(url);
-      reject(new Error('Failed to load image for rendering'));
-    };
+  const canvas = await compositeStudioImage(
+    subImg,
+    origImg,
+    w,
+    h,
+    item.studioConfig.backdrop,
+    item.studioConfig.stroke,
+    item.studioConfig.shadow,
+    item.studioConfig.adjustments,
+    item.studioConfig.edge,
+    item.studioConfig.crop
+  );
 
-    img.src = url;
+  return new Promise<Blob>((resolve, reject) => {
+    canvas.toBlob(
+      (blob) => {
+        if (blob) resolve(blob);
+        else reject(new Error('Canvas blob conversion failed'));
+      },
+      format,
+      quality
+    );
   });
 }
 
@@ -91,26 +66,25 @@ export async function renderImageWithBackdrop(
  */
 export async function downloadAllAsZip(
   items: ProcessedImageItem[],
-  zipName = 'erasedrop_images.zip'
+  zipName = 'erasedrop_batch.zip'
 ): Promise<void> {
-  const completedItems = items.filter((item) => item.status === 'completed' && item.processedBlob);
+  const completedItems = items.filter((item) => item.status === 'completed' && item.processedUrl);
   if (completedItems.length === 0) return;
 
   const zip = new JSZip();
 
   for (let i = 0; i < completedItems.length; i++) {
     const item = completedItems[i];
-    if (!item.processedBlob) continue;
+    if (!item.processedUrl) continue;
 
     const baseName = item.name.replace(/\.[^/.]+$/, '');
-    const extension = item.backdrop.type === 'transparent' ? 'png' : 'png';
-    const filename = `${baseName}_erasedrop.${extension}`;
+    const filename = `${baseName}_erasedrop.png`;
 
-    if (item.backdrop.type === 'transparent') {
-      zip.file(filename, item.processedBlob);
-    } else {
-      const renderedBlob = await renderImageWithBackdrop(item.processedBlob, item.backdrop);
+    try {
+      const renderedBlob = await renderProcessedItemToBlob(item);
       zip.file(filename, renderedBlob);
+    } catch (err) {
+      console.error(`Failed to process item ${item.name} for ZIP:`, err);
     }
   }
 

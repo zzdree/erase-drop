@@ -16,13 +16,13 @@ import {
 } from './services/db';
 import { downloadAllAsZip } from './services/zipExporter';
 import { Navbar } from './components/Navbar';
+import { HeroSection } from './components/HeroSection';
 import { DropZone } from './components/DropZone';
 import { QueueList } from './components/QueueList';
 import { StudioModal } from './components/studio/StudioModal';
 import { HistoryDrawer } from './components/HistoryDrawer';
 import { DocModal } from './components/DocModal';
 import { Footer } from './components/Footer';
-import { Sparkles, ShieldCheck, Zap, Scissors } from 'lucide-react';
 
 export const App: React.FC = () => {
   // Theme state
@@ -98,6 +98,18 @@ export const App: React.FC = () => {
     setItems((prev) => [...prev, ...newItems]);
   };
 
+  // Handle sample selection from Hero
+  const handleSelectSample = async (sampleUrl: string, name: string) => {
+    try {
+      const res = await fetch(sampleUrl);
+      const blob = await res.blob();
+      const file = new File([blob], name, { type: blob.type || 'image/jpeg' });
+      handleFilesSelected([file]);
+    } catch (err) {
+      console.error('Failed to load sample image:', err);
+    }
+  };
+
   // Background removal worker loop
   useEffect(() => {
     const processQueue = async () => {
@@ -169,10 +181,10 @@ export const App: React.FC = () => {
         );
         if (remainingPending.length === 0) {
           confetti({
-            particleCount: 80,
-            spread: 70,
+            particleCount: 90,
+            spread: 80,
             origin: { y: 0.6 },
-            colors: ['#00E5FF', '#10B981', '#1C54D6'],
+            colors: ['#00F0FF', '#10B981', '#6366F1', '#EC4899'],
           });
         }
       } catch (err: unknown) {
@@ -265,7 +277,7 @@ export const App: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface-50 dark:bg-void transition-colors text-slate-900 dark:text-white">
+    <div className="min-h-screen flex flex-col bg-mesh-light dark:bg-mesh-dark transition-colors text-slate-900 dark:text-white antialiased selection:bg-brand-cyan selection:text-slate-950">
 
       {/* Top Navbar */}
       <Navbar
@@ -280,49 +292,17 @@ export const App: React.FC = () => {
       {/* Main Container */}
       <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-16 flex flex-col items-center">
 
-        {/* Hero Value Section (Only displayed when queue is empty) */}
+        {/* Hero Value Section (When queue is empty) */}
         {items.length === 0 && (
-          <div className="text-center max-w-3xl mb-8 animate-in fade-in slide-in-from-top-4 duration-500">
-
-            {/* Pill Banner */}
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-mono font-bold bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 mb-6 shadow-sm">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>100% IN-BROWSER AI • PAS FOTO STUDIO • ZERO SERVER UPLOAD</span>
-            </div>
-
-            {/* Main Headline */}
-            <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-slate-900 dark:text-white leading-[1.1] mb-4">
-              AI Background Remover <br />
-              <span className="bg-gradient-to-r from-brand-cyan via-teal-400 to-brand-emerald bg-clip-text text-transparent">
-                &amp; Creative Studio Suite.
-              </span>
-            </h1>
-
-            <p className="text-base sm:text-lg text-slate-600 dark:text-slate-400 max-w-2xl mx-auto leading-relaxed">
-              Hapus latar belakang foto dalam hitungan detik langsung di browser Anda. Lengkap dengan preset Pas Foto resmi Indonesia, stiker outline YouTube, kuas touch-up, dan export batch ZIP.
-            </p>
-
-            {/* Value Badges */}
-            <div className="flex flex-wrap items-center justify-center gap-4 mt-6 text-xs font-mono text-slate-500 dark:text-slate-400">
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-200/60 dark:bg-surface-800">
-                <ShieldCheck className="w-3.5 h-3.5 text-brand-emerald" />
-                <span>100% Client-Side Privacy</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-200/60 dark:bg-surface-800">
-                <Zap className="w-3.5 h-3.5 text-brand-cyan" />
-                <span>WebGPU Hardware Accelerated</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-200/60 dark:bg-surface-800">
-                <Scissors className="w-3.5 h-3.5 text-brand-amber" />
-                <span>Pas Foto 2x3, 3x4, 4x6</span>
-              </div>
-            </div>
-          </div>
+          <HeroSection
+            onSelectSample={handleSelectSample}
+            isGpuSupported={isGpuSupported}
+          />
         )}
 
         {/* Dropzone / Upload Area */}
         {items.length === 0 ? (
-          <div className="w-full max-w-3xl animate-in fade-in duration-300">
+          <div className="w-full max-w-3xl animate-in fade-in duration-500">
             <DropZone onFilesSelected={handleFilesSelected} />
           </div>
         ) : (

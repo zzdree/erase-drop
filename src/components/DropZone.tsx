@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { UploadCloud, Image as ImageIcon, Sparkles, ShieldCheck, Zap, Layers } from 'lucide-react';
+import { UploadCloud, Image as ImageIcon, Sparkles, Zap } from 'lucide-react';
 
 interface DropZoneProps {
   onFilesSelected: (files: File[]) => void;
@@ -43,7 +43,7 @@ export const DropZone: React.FC<DropZoneProps> = ({ onFilesSelected }) => {
     setIsDragOver(false);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDropFiles = (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     setIsDragOver(false);
@@ -98,62 +98,62 @@ export const DropZone: React.FC<DropZoneProps> = ({ onFilesSelected }) => {
       <div
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        onDrop={handleDropFiles}
         onClick={() => fileInputRef.current?.click()}
         className={`w-full group cursor-pointer relative overflow-hidden rounded-3xl p-8 sm:p-14 text-center transition-all duration-300 border-2 border-dashed ${
           isDragOver
-            ? 'border-brand-cyan bg-brand-cyan/5 dark:bg-brand-cyan/10 scale-[1.01] shadow-2xl shadow-cyan-500/20'
-            : 'border-slate-300 dark:border-surface-800 bg-white/70 dark:bg-surface-850/60 hover:border-brand-cyan/70 dark:hover:border-brand-cyan/50 hover:bg-slate-50/90 dark:hover:bg-surface-800/80 shadow-xl shadow-black/5 dark:shadow-black/40 backdrop-blur-xl'
+            ? 'border-brand-cyan bg-brand-cyan/10 scale-[1.01] shadow-2xl shadow-cyan-500/25 ring-4 ring-brand-cyan/20'
+            : 'border-slate-300 dark:border-obsidian-700 bg-white/80 dark:bg-obsidian-900/80 hover:border-brand-cyan dark:hover:border-brand-cyan hover:bg-slate-50/90 dark:hover:bg-obsidian-850/90 shadow-2xl shadow-black/5 dark:shadow-black/50 backdrop-blur-2xl'
         }`}
       >
         {/* Background Ambient Glow */}
-        <div className="absolute inset-0 bg-gradient-to-b from-brand-cyan/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+        <div className="absolute -inset-2 bg-gradient-to-tr from-brand-cyan/10 via-brand-teal/5 to-brand-purple/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none rounded-3xl blur-xl" />
 
         <div className="relative z-10 flex flex-col items-center justify-center">
           {/* Animated Icon Circle */}
-          <div className="relative mb-5">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-cyan-500/20 via-brand-blue/20 to-purple-500/20 dark:from-cyan-500/30 dark:to-purple-500/30 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+          <div className="relative mb-6">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-brand-cyan/20 via-brand-teal/20 to-brand-purple/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-inner">
               <UploadCloud className="w-10 h-10 text-brand-cyan group-hover:-translate-y-1 transition-transform" />
             </div>
-            <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-md">
+            <div className="absolute -top-1 -right-1 w-6 h-6 rounded-full bg-brand-emerald flex items-center justify-center text-slate-950 font-bold shadow-md">
               <Zap className="w-3.5 h-3.5 fill-current" />
             </div>
           </div>
 
           {/* Heading */}
           <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
-            Drag & Drop Images Here
+            Drag & Drop Foto ke Sini
           </h2>
 
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400 max-w-md mx-auto mb-6">
-            or <span className="text-brand-cyan font-semibold underline underline-offset-4">browse files</span> from your device. Supports JPG, PNG, WEBP, and Paste (Ctrl+V).
+            atau <span className="text-brand-cyan font-semibold underline underline-offset-4">klik untuk memilih file</span> dari laptop/HP Anda. Mendukung JPG, PNG, WEBP, dan Clipboard Paste (<span className="font-mono text-xs bg-slate-200 dark:bg-obsidian-800 px-1.5 py-0.5 rounded">Ctrl+V</span>).
           </p>
 
           {/* Upload Button */}
           <button
             type="button"
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-slate-900 text-white dark:bg-white dark:text-slate-950 group-hover:bg-brand-cyan group-hover:text-black dark:group-hover:bg-brand-cyan dark:group-hover:text-black transition-all shadow-lg group-hover:shadow-cyan-500/25"
+            className="inline-flex items-center gap-2.5 px-6 py-3.5 rounded-2xl font-extrabold text-sm bg-slate-950 text-white dark:bg-white dark:text-slate-950 group-hover:bg-gradient-to-r group-hover:from-brand-cyan group-hover:to-brand-teal group-hover:text-slate-950 transition-all shadow-xl group-hover:shadow-cyan-500/25 active:scale-95 font-mono"
           >
             <ImageIcon className="w-4 h-4" />
-            <span>Select Photos to Remove Background</span>
+            <span>Pilih Gambar untuk Hapus Background</span>
           </button>
         </div>
       </div>
 
       {/* Try with Sample Photos */}
-      <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs text-slate-500 dark:text-slate-400">
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-2.5 sm:gap-3 text-xs text-slate-500 dark:text-slate-400">
         <span className="font-medium flex items-center gap-1">
-          <Sparkles className="w-3.5 h-3.5 text-brand-cyan" /> No photo right now? Try demo:
+          <Sparkles className="w-3.5 h-3.5 text-brand-cyan" /> Tidak ada foto? Coba sampel:
         </span>
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleLoadSample(
-              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=600&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=800&auto=format&fit=crop&q=80',
               'sample-portrait.jpg'
             );
           }}
-          className="px-3 py-1.5 rounded-lg bg-white dark:bg-surface-800 border border-slate-200 dark:border-surface-700 hover:border-brand-cyan text-slate-700 dark:text-slate-300 hover:text-brand-cyan transition-colors"
+          className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-obsidian-850 border border-slate-200 dark:border-obsidian-700 hover:border-brand-cyan text-slate-700 dark:text-slate-300 hover:text-brand-cyan transition-colors shadow-sm font-medium"
         >
           👤 Portrait Model
         </button>
@@ -161,60 +161,28 @@ export const DropZone: React.FC<DropZoneProps> = ({ onFilesSelected }) => {
           onClick={(e) => {
             e.stopPropagation();
             handleLoadSample(
-              'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&auto=format&fit=crop&q=80',
               'sample-product-shoes.jpg'
             );
           }}
-          className="px-3 py-1.5 rounded-lg bg-white dark:bg-surface-800 border border-slate-200 dark:border-surface-700 hover:border-brand-cyan text-slate-700 dark:text-slate-300 hover:text-brand-cyan transition-colors"
+          className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-obsidian-850 border border-slate-200 dark:border-obsidian-700 hover:border-brand-cyan text-slate-700 dark:text-slate-300 hover:text-brand-cyan transition-colors shadow-sm font-medium"
         >
-          👟 Product Shoes
+          👟 Sepatu Produk
         </button>
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleLoadSample(
-              'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=600&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=800&auto=format&fit=crop&q=80',
               'sample-dog.jpg'
             );
           }}
-          className="px-3 py-1.5 rounded-lg bg-white dark:bg-surface-800 border border-slate-200 dark:border-surface-700 hover:border-brand-cyan text-slate-700 dark:text-slate-300 hover:text-brand-cyan transition-colors"
+          className="px-3.5 py-1.5 rounded-xl bg-white dark:bg-obsidian-850 border border-slate-200 dark:border-obsidian-700 hover:border-brand-cyan text-slate-700 dark:text-slate-300 hover:text-brand-cyan transition-colors shadow-sm font-medium"
         >
-          🐕 Cute Dog
+          🐕 Anjing Lucu
         </button>
       </div>
 
-      {/* Feature Highlights Trust Badges */}
-      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-4 w-full">
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/60 dark:bg-surface-850/60 border border-slate-200/60 dark:border-surface-800 backdrop-blur-sm">
-          <div className="p-2.5 rounded-xl bg-emerald-500/10 text-emerald-500">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div className="text-left">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">100% Private</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Processed in browser. 0 byte sent to server.</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/60 dark:bg-surface-850/60 border border-slate-200/60 dark:border-surface-800 backdrop-blur-sm">
-          <div className="p-2.5 rounded-xl bg-brand-cyan/10 text-brand-cyan">
-            <Zap className="w-5 h-5" />
-          </div>
-          <div className="text-left">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">WebGPU Fast</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400">Neural matting in 1–3s with GPU acceleration.</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-3 p-4 rounded-2xl bg-white/60 dark:bg-surface-850/60 border border-slate-200/60 dark:border-surface-800 backdrop-blur-sm">
-          <div className="p-2.5 rounded-xl bg-purple-500/10 text-purple-400">
-            <Layers className="w-5 h-5" />
-          </div>
-          <div className="text-left">
-            <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">Unlimited & Free</h4>
-            <p className="text-xs text-slate-500 dark:text-slate-400">No tokens, no credit cards, batch export to ZIP.</p>
-          </div>
-        </div>
-      </div>
     </div>
   );
 };

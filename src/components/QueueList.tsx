@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Download,
   Trash2,
@@ -7,12 +7,15 @@ import {
   AlertCircle,
   Loader2,
   Plus,
-  RefreshCw
+  RefreshCw,
+  Copy,
+  Check,
+  Palette
 } from 'lucide-react';
 import type { ProcessedImageItem, BackdropOption } from '../types';
 import { BatchActionBar } from './queue/BatchActionBar';
 import { saveAs } from 'file-saver';
-import { compositeStudioImage } from '../services/canvasEffects';
+import { compositeStudioImage, copyCanvasToClipboard } from '../services/canvasEffects';
 
 interface QueueListProps {
   items: ProcessedImageItem[];
@@ -22,6 +25,7 @@ interface QueueListProps {
   onAddMore: () => void;
   onDownloadAllZip: () => void;
   onApplyBackdropToAll: (backdrop: BackdropOption) => void;
+  onUpdateItemBackdrop?: (id: string, backdrop: BackdropOption) => void;
   isDownloadingZip: boolean;
   onRetryItem: (id: string) => void;
 }
@@ -34,14 +38,70 @@ export const QueueList: React.FC<QueueListProps> = ({
   onAddMore,
   onDownloadAllZip,
   onApplyBackdropToAll,
+  onUpdateItemBackdrop,
   isDownloadingZip,
   onRetryItem,
 }) => {
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const completedCount = items.filter((i) => i.status === 'completed').length;
   const processingCount = items.filter((i) => i.status === 'processing').length;
   const totalCount = items.length;
 
-  const handleDownloadSingle = async (item: ProcessedImageItem) => {
+  const quickPresets: BackdropOption[] = [
+    { type: 'transparent', value: '', name: 'Transparan' },
+    { type: 'color', value: '#FFFFFF', name: 'Putih' },
+    { type: 'color', value: '#D61C1C', name: 'Merah KTP' },
+    { type: 'color', value: '#1C54D6', name: 'Biru ID' },
+  ];
+
+  const handleCopySingle = async (item: ProcessedImageItem) => {
+    if (!item.processedBlob || !item.processedUrl) return;
+    try {
+      const subImg = new Image();
+      subImg.crossOrigin = 'anonymous';
+
+      await new Promise<void>((resolve, reject) => {
+        subImg.onload = () => resolve();
+        subImg.onerror = () => reject(new Error('Failed to load image'));
+        subImg.src = item.processedUrl!;
+      });
+
+      let origImg: HTMLImageElement | null = null;
+      if (item.originalUrl) {
+        origImg = new Image();
+        origImg.crossOrigin = 'anonymous';
+        await new Promise<void>((resolve) => {
+          origImg!.onload = () => resolve();
+          origImg!.onerror = () => resolve();
+          origImg!.src = item.originalUrl;
+        });
+      }
+
+      const w = subImg.naturalWidth || 800;
+      const h = subImg.naturalHeight || 800;
+
+      const canvas = await compositeStudioImage(
+        subImg,
+        origImg,
+        w,
+        h,
+        item.studioConfig.backdrop,
+        item.studioConfig.stroke,
+        item.studioConfig.shadow,
+        item.studioConfig.adjustments,
+        item.studioConfig.edge,
+        item.studioConfig.crop
+      );
+
+      await copyCanvasToClipboard(canvas);
+      setCopiedId(item.id);
+      setTimeout(() => setCopiedId(null), 2000);
+    } catch (err) {
+      console.error('Copy failed:', err);
+    }
+  };
+
+  const handleDownloadSingle = async (item: ProcessedImageItem, format: 'image/png' | 'image/jpeg' | 'image/webp' = 'image/png') => {
     if (!item.processedBlob || !item.processedUrl) return;
     try {
       const subImg = new Image();
@@ -82,10 +142,11 @@ export const QueueList: React.FC<QueueListProps> = ({
 
       canvas.toBlob((blob) => {
         if (blob) {
+          const ext = format === 'image/jpeg' ? 'jpg' : format === 'image/webp' ? 'webp' : 'png';
           const baseName = item.name.replace(/\.[^/.]+$/, '');
-          saveAs(blob, `${baseName}_erasedrop.png`);
+          saveAs(blob, `${baseName}_erasedrop.${ext}`);
         }
-      }, 'image/png');
+      }, format, 0.95);
     } catch (err) {
       console.error('Download failed:', err);
     }
@@ -238,21 +299,69 @@ export const QueueList: React.FC<QueueListProps> = ({
                   </span>
                 </div>
 
-                <div className="flex items-center gap-2 pt-1">
+                {/* Quick 1-Click Background Presets (When completed) */}
+                {isDone && (
+                  <div className="flex items-center justify-between gap-1 pt-1 pb-1 border-t border-b border-slate-100 dark:border-surface-800/80">
+                    <span className="text-[10px] font-mono font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1">
+                      <Palette className="w-3 h-3 text-brand-cyan" /> BG:
+                    </span>
+                    <div className="flex items-center gap-1">
+                      {quickPresets.map((preset) => {
+                        const isSelected =
+                          (preset.type === 'transparent' && item.studioConfig.backdrop.type === 'transparent') ||
+                          (preset.type === 'color' && item.studioConfig.backdrop.type === 'color' && item.studioConfig.backdrop.value === preset.value);
+                        return (
+                          <button
+                            key={preset.name}
+                            onClick={() => onUpdateItemBackdrop?.(item.id, preset)}
+                            className={`px-1.5 py-0.5 rounded-lg text-[10px] font-mono border transition-all flex items-center gap-1 ${
+                              isSelected
+                                ? 'border-brand-cyan bg-brand-cyan/10 text-brand-cyan font-bold shadow-sm'
+                                : 'border-slate-200 dark:border-surface-700 bg-white/40 dark:bg-surface-900/40 text-slate-600 dark:text-slate-400 hover:border-slate-400'
+                            }`}
+                            title={`Ganti ke ${preset.name}`}
+                          >
+                            {preset.type === 'color' ? (
+                              <span className="w-2 h-2 rounded-full border border-black/20" style={{ backgroundColor: preset.value }} />
+                            ) : (
+                              <span className="w-2 h-2 rounded-full checkerboard-pattern border border-black/20" />
+                            )}
+                            <span className="text-[9px]">{(preset.name || 'BG').split(' ')[0]}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex items-center gap-1.5 pt-1">
                   <button
                     onClick={() => onOpenStudio(item)}
                     disabled={!isDone}
-                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-xl text-xs font-bold bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan hover:text-slate-950 border border-brand-cyan/30 disabled:opacity-30 disabled:pointer-events-none transition-all"
+                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-2.5 rounded-xl text-xs font-bold bg-brand-cyan/10 text-brand-cyan hover:bg-brand-cyan hover:text-slate-950 border border-brand-cyan/30 disabled:opacity-30 disabled:pointer-events-none transition-all"
                   >
                     <Sliders className="w-3.5 h-3.5" />
-                    <span>Open Studio</span>
+                    <span>Studio</span>
                   </button>
 
                   <button
-                    onClick={() => handleDownloadSingle(item)}
+                    onClick={() => handleCopySingle(item)}
                     disabled={!isDone}
-                    className="p-2 rounded-xl text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-surface-800 disabled:opacity-30 transition-colors"
-                    title="Download Image"
+                    className={`p-2 rounded-xl border transition-all ${
+                      copiedId === item.id
+                        ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500'
+                        : 'border-slate-200 dark:border-surface-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-surface-800 disabled:opacity-30'
+                    }`}
+                    title="1-Click Copy to Clipboard (PNG)"
+                  >
+                    {copiedId === item.id ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  </button>
+
+                  <button
+                    onClick={() => handleDownloadSingle(item, 'image/png')}
+                    disabled={!isDone}
+                    className="p-2 rounded-xl border border-slate-200 dark:border-surface-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200/60 dark:hover:bg-surface-800 disabled:opacity-30 transition-colors"
+                    title="Download PNG HD"
                   >
                     <Download className="w-4 h-4" />
                   </button>
@@ -260,7 +369,7 @@ export const QueueList: React.FC<QueueListProps> = ({
                   <button
                     onClick={() => onRemoveItem(item.id)}
                     className="p-2 rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                    title="Remove from queue"
+                    title="Hapus gambar"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   X,
   Download,
@@ -6,7 +6,11 @@ import {
   ZoomIn,
   ZoomOut,
   Undo2,
-  Redo2
+  Redo2,
+  Copy,
+  Check,
+  Printer,
+  ChevronDown
 } from 'lucide-react';
 import type { ProcessedImageItem, StudioConfig, BrushSettings } from '../../types';
 import type { StudioTab } from './StudioSidebar';
@@ -19,7 +23,11 @@ import { TouchUpPanel } from './panels/TouchUpPanel';
 import { ColorAdjustPanel } from './panels/ColorAdjustPanel';
 import { useHistoryStack } from '../../hooks/useHistoryStack';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts';
-import { compositeStudioImage } from '../../services/canvasEffects';
+import {
+  compositeStudioImage,
+  copyCanvasToClipboard,
+  generatePasFotoPrintSheet
+} from '../../services/canvasEffects';
 import { saveAs } from 'file-saver';
 
 interface StudioModalProps {
@@ -37,6 +45,9 @@ export const StudioModal: React.FC<StudioModalProps> = ({
 
   // Active Sidebar Tool Tab
   const [activeTab, setActiveTab] = useState<StudioTab>('background');
+
+  // Mask canvas ref for touch-up brush
+  const maskCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
   // Studio History Stack for Undo/Redo
   const {
@@ -61,6 +72,8 @@ export const StudioModal: React.FC<StudioModalProps> = ({
   const [splitView, setSplitView] = useState(false);
   const [sliderPos, setSliderPos] = useState(50);
   const [isExporting, setIsExporting] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
+  const [showExportMenu, setShowExportMenu] = useState(false);
 
   // Keyboard shortcuts
   useKeyboardShortcuts({
@@ -82,44 +95,61 @@ export const StudioModal: React.FC<StudioModalProps> = ({
     onSaveConfig(item.id, newConfig);
   };
 
+  const getCompositedCanvas = async (): Promise<HTMLCanvasElement> => {
+    const subImg = new Image();
+    subImg.crossOrigin = 'anonymous';
+
+    await new Promise<void>((resolve, reject) => {
+      subImg.onload = () => resolve();
+      subImg.onerror = () => reject(new Error('Failed to load image'));
+      subImg.src = item.processedUrl!;
+    });
+
+    let origImg: HTMLImageElement | null = null;
+    if (item.originalUrl) {
+      origImg = new Image();
+      origImg.crossOrigin = 'anonymous';
+      await new Promise<void>((resolve) => {
+        origImg!.onload = () => resolve();
+        origImg!.onerror = () => resolve();
+        origImg!.src = item.originalUrl;
+      });
+    }
+
+    const w = subImg.naturalWidth || 800;
+    const h = subImg.naturalHeight || 800;
+
+    return compositeStudioImage(
+      subImg,
+      origImg,
+      w,
+      h,
+      currentConfig.backdrop,
+      currentConfig.stroke,
+      currentConfig.shadow,
+      currentConfig.adjustments,
+      currentConfig.edge,
+      currentConfig.crop,
+      maskCanvasRef.current
+    );
+  };
+
+  const handleCopy = async () => {
+    try {
+      const canvas = await getCompositedCanvas();
+      await copyCanvasToClipboard(canvas);
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      console.error('Clipboard copy failed:', err);
+    }
+  };
+
   const handleExport = async (format: 'image/png' | 'image/jpeg' | 'image/webp' = 'image/png') => {
     setIsExporting(true);
+    setShowExportMenu(false);
     try {
-      const subImg = new Image();
-      subImg.crossOrigin = 'anonymous';
-
-      await new Promise<void>((resolve, reject) => {
-        subImg.onload = () => resolve();
-        subImg.onerror = () => reject(new Error('Failed to load image'));
-        subImg.src = item.processedUrl!;
-      });
-
-      let origImg: HTMLImageElement | null = null;
-      if (item.originalUrl) {
-        origImg = new Image();
-        origImg.crossOrigin = 'anonymous';
-        await new Promise<void>((resolve) => {
-          origImg!.onload = () => resolve();
-          origImg!.onerror = () => resolve();
-          origImg!.src = item.originalUrl;
-        });
-      }
-
-      const w = subImg.naturalWidth || 800;
-      const h = subImg.naturalHeight || 800;
-
-      const finalCanvas = await compositeStudioImage(
-        subImg,
-        origImg,
-        w,
-        h,
-        currentConfig.backdrop,
-        currentConfig.stroke,
-        currentConfig.shadow,
-        currentConfig.adjustments,
-        currentConfig.edge,
-        currentConfig.crop
-      );
+      const finalCanvas = await getCompositedCanvas();
 
       finalCanvas.toBlob(
         (blob: Blob | null) => {
@@ -135,6 +165,30 @@ export const StudioModal: React.FC<StudioModalProps> = ({
       );
     } catch (err) {
       console.error('Export failed:', err);
+      setIsExporting(false);
+    }
+  };
+
+  const handleExportPrintSheet = async (paper: '4R' | 'A4') => {
+    setIsExporting(true);
+    setShowExportMenu(false);
+    try {
+      const photoCanvas = await getCompositedCanvas();
+      const sheetCanvas = generatePasFotoPrintSheet(photoCanvas, paper);
+
+      sheetCanvas.toBlob(
+        (blob: Blob | null) => {
+          if (blob) {
+            const baseName = item.name.replace(/\.[^/.]+$/, '');
+            saveAs(blob, `${baseName}_pasfoto_sheet_${paper}.jpg`);
+          }
+          setIsExporting(false);
+        },
+        'image/jpeg',
+        0.98
+      );
+    } catch (err) {
+      console.error('Print sheet generation failed:', err);
       setIsExporting(false);
     }
   };
@@ -221,14 +275,90 @@ export const StudioModal: React.FC<StudioModalProps> = ({
 
           {/* Right Export & Close Buttons */}
           <div className="flex items-center gap-2">
+            {/* 1-Click Copy Button */}
             <button
-              onClick={() => handleExport('image/png')}
-              disabled={isExporting}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs bg-gradient-to-r from-brand-cyan to-teal-400 text-slate-950 hover:brightness-110 shadow-md shadow-cyan-500/20 active:scale-95 transition-all"
+              onClick={handleCopy}
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-bold text-xs border transition-all ${
+                isCopied
+                  ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500'
+                  : 'border-slate-200 dark:border-surface-700 bg-white/50 dark:bg-surface-800/80 hover:border-brand-cyan text-slate-800 dark:text-slate-200'
+              }`}
+              title="Copy to Clipboard (PNG)"
             >
-              <Download className="w-3.5 h-3.5" />
-              <span>Export HD</span>
+              {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              <span className="hidden sm:inline">{isCopied ? 'Copied!' : 'Copy'}</span>
             </button>
+
+            {/* Export Dropdown */}
+            <div className="relative">
+              <div className="flex items-center">
+                <button
+                  onClick={() => handleExport('image/png')}
+                  disabled={isExporting}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-l-xl font-bold text-xs bg-gradient-to-r from-brand-cyan to-teal-400 text-slate-950 hover:brightness-110 shadow-md shadow-cyan-500/20 active:scale-95 transition-all"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>{isExporting ? 'Exporting...' : 'Export PNG'}</span>
+                </button>
+                <button
+                  onClick={() => setShowExportMenu(!showExportMenu)}
+                  disabled={isExporting}
+                  className="p-1.5 px-2 rounded-r-xl border-l border-cyan-400/40 bg-teal-400 text-slate-950 hover:brightness-110 shadow-md shadow-cyan-500/20 transition-all"
+                  title="More Export Options"
+                >
+                  <ChevronDown className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Dropdown Menu */}
+              {showExportMenu && (
+                <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-surface-900 border border-slate-200 dark:border-surface-750 rounded-xl shadow-2xl p-1.5 z-50 flex flex-col gap-1 animate-in fade-in slide-in-from-top-1 text-xs">
+                  <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold">
+                    Export Formats
+                  </div>
+                  <button
+                    onClick={() => handleExport('image/png')}
+                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-800 text-left font-medium"
+                  >
+                    <span>PNG (Transparan HD)</span>
+                    <span className="text-[10px] font-mono text-slate-400">Lossless</span>
+                  </button>
+                  <button
+                    onClick={() => handleExport('image/webp')}
+                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-800 text-left font-medium"
+                  >
+                    <span>WebP (Optimal Web)</span>
+                    <span className="text-[10px] font-mono text-emerald-500">Kecil</span>
+                  </button>
+                  <button
+                    onClick={() => handleExport('image/jpeg')}
+                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-800 text-left font-medium"
+                  >
+                    <span>JPEG / JPG</span>
+                    <span className="text-[10px] font-mono text-slate-400">Standard</span>
+                  </button>
+
+                  <div className="my-1 border-t border-slate-200 dark:border-surface-800" />
+                  <div className="px-2.5 py-1 text-[10px] font-mono uppercase tracking-wider text-slate-400 font-bold flex items-center gap-1">
+                    <Printer className="w-3 h-3 text-brand-cyan" /> Pas Foto Sheet
+                  </div>
+                  <button
+                    onClick={() => handleExportPrintSheet('4R')}
+                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-800 text-left font-medium text-brand-cyan"
+                  >
+                    <span>Lembar Cetak 4R (Grid)</span>
+                    <span className="text-[10px] font-mono text-slate-400">300 DPI</span>
+                  </button>
+                  <button
+                    onClick={() => handleExportPrintSheet('A4')}
+                    className="flex items-center justify-between w-full px-2.5 py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-surface-800 text-left font-medium text-brand-cyan"
+                  >
+                    <span>Lembar Cetak A4 (Grid)</span>
+                    <span className="text-[10px] font-mono text-slate-400">300 DPI</span>
+                  </button>
+                </div>
+              )}
+            </div>
 
             <button
               onClick={onClose}
@@ -274,6 +404,7 @@ export const StudioModal: React.FC<StudioModalProps> = ({
               splitView={splitView}
               sliderPos={sliderPos}
               zoom={zoom}
+              maskCanvasRef={maskCanvasRef}
             />
           </div>
 
@@ -311,7 +442,16 @@ export const StudioModal: React.FC<StudioModalProps> = ({
               <TouchUpPanel
                 brush={brush}
                 onChangeBrush={setBrush}
-                onClearMask={() => {}}
+                onClearMask={() => {
+                  if (maskCanvasRef.current) {
+                    const ctx = maskCanvasRef.current.getContext('2d');
+                    if (ctx) {
+                      ctx.clearRect(0, 0, maskCanvasRef.current.width, maskCanvasRef.current.height);
+                      // Trigger config update to re-render canvas
+                      handleConfigChange({ ...currentConfig });
+                    }
+                  }
+                }}
               />
             )}
 

@@ -245,6 +245,19 @@ export const App: React.FC = () => {
     }
   };
 
+  const handleUpdateItemBackdrop = (id: string, backdrop: BackdropOption) => {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              studioConfig: { ...item.studioConfig, backdrop },
+            }
+          : item
+      )
+    );
+  };
+
   const handleApplyBackdropToAll = (backdrop: BackdropOption) => {
     setItems((prev) =>
       prev.map((item) => ({
@@ -325,6 +338,7 @@ export const App: React.FC = () => {
               }}
               onDownloadAllZip={handleDownloadAllZip}
               onApplyBackdropToAll={handleApplyBackdropToAll}
+              onUpdateItemBackdrop={handleUpdateItemBackdrop}
               isDownloadingZip={isDownloadingZip}
               onRetryItem={handleRetryItem}
             />

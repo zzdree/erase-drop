@@ -281,3 +281,115 @@ export async function compositeStudioImage(
 
   return fullCanvas;
 }
+
+/**
+ * Copy a canvas or blob directly to user's system clipboard as PNG
+ */
+export async function copyCanvasToClipboard(canvas: HTMLCanvasElement): Promise<boolean> {
+  if (typeof window === 'undefined' || !navigator.clipboard || !window.ClipboardItem) {
+    throw new Error('Clipboard API is not supported in this browser.');
+  }
+
+  return new Promise<boolean>((resolve, reject) => {
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        reject(new Error('Failed to generate image blob for clipboard'));
+        return;
+      }
+      try {
+        const item = new ClipboardItem({ 'image/png': blob });
+        await navigator.clipboard.write([item]);
+        resolve(true);
+      } catch (err) {
+        console.error('Clipboard copy failed:', err);
+        reject(err);
+      }
+    }, 'image/png');
+  });
+}
+
+/**
+ * Generate a ready-to-print Pas Foto Sheet (e.g. A4 or 4R size grid)
+ * Standard layout: 4x (3x4 cm) + 2x (4x6 cm) + 4x (2x3 cm)
+ */
+export function generatePasFotoPrintSheet(
+  photoCanvas: HTMLCanvasElement,
+  paperType: '4R' | 'A4' = '4R'
+): HTMLCanvasElement {
+  // 300 DPI calculations:
+  // 4R = 4 x 6 inches = 1200 x 1800 px (300 DPI)
+  // A4 = 8.27 x 11.69 inches = 2480 x 3508 px (300 DPI)
+  const isA4 = paperType === 'A4';
+  const sheetW = isA4 ? 2480 : 1200;
+  const sheetH = isA4 ? 3508 : 1800;
+
+  const { canvas: sheetCanvas, ctx } = createOffscreen(sheetW, sheetH);
+
+  // Fill crisp white photo paper ground
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillRect(0, 0, sheetW, sheetH);
+
+  // Helper to draw a single photo with subtle cutting guide border
+  const drawPhotoTile = (x: number, y: number, w: number, h: number, label: string) => {
+    ctx.drawImage(photoCanvas, 0, 0, photoCanvas.width, photoCanvas.height, x, y, w, h);
+
+    // Subtle 1px cutting line
+    ctx.strokeStyle = '#D1D5DB';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x, y, w, h);
+
+    // Mini size label below
+    ctx.fillStyle = '#9CA3AF';
+    ctx.font = '16px monospace';
+    ctx.fillText(label, x + 6, y + h + 18);
+  };
+
+  // Convert cm to px @ 300 DPI (1 cm = ~118.11 px)
+  const cmToPx = (cm: number) => Math.round(cm * 118.11);
+
+  const p2x3_w = cmToPx(2.0);
+  const p2x3_h = cmToPx(2.7);
+
+  const p3x4_w = cmToPx(2.8);
+  const p3x4_h = cmToPx(3.8);
+
+  const p4x6_w = cmToPx(3.8);
+  const p4x6_h = cmToPx(5.6);
+
+  const marginX = cmToPx(0.8);
+  let currentY = cmToPx(0.8);
+
+  // Header info banner on print sheet
+  ctx.fillStyle = '#111827';
+  ctx.font = 'bold 24px sans-serif';
+  ctx.fillText(`EraseDrop Pas Foto Print Sheet (${paperType} • 300 DPI)`, marginX, currentY);
+  currentY += 40;
+
+  // 1. Draw Row 1: 4x6 cm photos (2 copies)
+  let curX = marginX;
+  for (let i = 0; i < (isA4 ? 4 : 2); i++) {
+    drawPhotoTile(curX, currentY, p4x6_w, p4x6_h, '4x6 cm');
+    curX += p4x6_w + cmToPx(0.4);
+  }
+
+  currentY += p4x6_h + cmToPx(0.7);
+
+  // 2. Draw Row 2: 3x4 cm photos (4 copies)
+  curX = marginX;
+  for (let i = 0; i < (isA4 ? 6 : 3); i++) {
+    drawPhotoTile(curX, currentY, p3x4_w, p3x4_h, '3x4 cm');
+    curX += p3x4_w + cmToPx(0.4);
+  }
+
+  currentY += p3x4_h + cmToPx(0.7);
+
+  // 3. Draw Row 3: 2x3 cm photos (4 copies)
+  curX = marginX;
+  for (let i = 0; i < (isA4 ? 8 : 4); i++) {
+    drawPhotoTile(curX, currentY, p2x3_w, p2x3_h, '2x3 cm');
+    curX += p2x3_w + cmToPx(0.4);
+  }
+
+  return sheetCanvas;
+}
+
